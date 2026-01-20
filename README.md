@@ -10,7 +10,7 @@ This parser disallows this:
 ## Installation
 
 ```shell
-go get -u github.com/kostya-zero/inix
+go get github.com/kostya-zero/inix
 ```
 
 ## Usage
