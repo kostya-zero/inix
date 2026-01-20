@@ -143,7 +143,6 @@ func Parse(content string) (IniDocument, error) {
 		// Parse key and value
 		if writingSection {
 			left, right, ok := strings.Cut(line, "=")
-			fmt.Printf("%s %s\n", left, right)
 			if !ok {
 				return document, &ParseError{
 					LineNumber: lineNo,
