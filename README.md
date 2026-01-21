@@ -18,7 +18,10 @@ go get github.com/kostya-zero/inix
 ```go
 package main
 
-import "github.com/kostya-zero/inix"
+import (
+    "fmt"
+    "github.com/kostya-zero/inix"
+)
 
 func main() {
     data := `[data]
