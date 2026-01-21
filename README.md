@@ -32,7 +32,7 @@ foo=bar`
     }
 
     // Get value of 'hello' key from a section 'data'
-    value, ok := section.GetKey("data","hello")
+    value, ok := document.GetKey("data","hello")
     if !ok {
         // Error handling
     }
