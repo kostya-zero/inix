@@ -1,11 +1,9 @@
 # inix
 
-**Inix** is a lightweight and strict INI parser for Go.
+**Inix** is a lightweight and strict INI parser for Go. 
 
-This parser disallows:
-
-- Inline comments.
-- Name of the sections that contains spaces.
+> [!WARN]
+> This parser doesnt not support inline comments! It will treat them as part of the value.
 
 ## Installation
 

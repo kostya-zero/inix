@@ -3,80 +3,9 @@ package inix
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"strings"
 )
-
-type IniDocument struct {
-	sections map[string]map[string]string
-}
-
-func (d *IniDocument) GetSection(name string) (*map[string]string, bool) {
-	section, ok := d.sections[name]
-	if !ok {
-		return nil, false
-	}
-
-	return &section, true
-}
-
-func (d *IniDocument) AddSection(name string, section map[string]string) error {
-	_, ok := d.sections[name]
-	if ok {
-		return errors.New("section already exist")
-	}
-
-	d.sections[name] = section
-
-	return nil
-}
-
-func (d *IniDocument) DeleteSection(name string) error {
-	_, ok := d.sections[name]
-	if !ok {
-		return errors.New("section not found")
-	}
-
-	delete(d.sections, name)
-	return nil
-}
-
-func (d *IniDocument) GetKey(section, key string) (string, bool) {
-	s, ok := d.sections[section]
-	if !ok {
-		return "", false
-	}
-
-	value, ok := s[key]
-	return value, ok
-}
-
-func (d *IniDocument) SetKey(section, key, value string) error {
-	s, ok := d.sections[section]
-	if !ok {
-		return errors.New("section not found")
-	}
-
-	s[key] = value
-	return nil
-}
-
-func (d *IniDocument) DeleteKey(section, key string) error {
-	s, ok := d.sections[section]
-	if !ok {
-		return errors.New("section not found")
-	}
-
-	_, ok = s[key]
-	if !ok {
-		return errors.New("key not found")
-	}
-
-	delete(s, key)
-
-	return nil
-}
 
 type ParseError struct {
 	LineNumber int
@@ -87,16 +16,16 @@ func (e *ParseError) Error() string {
 	return fmt.Sprintf("error on line %d: %s", e.LineNumber, e.Message)
 }
 
-func Parse(content string) (IniDocument, error) {
+func Parse(content string) (map[string]map[string]string, error) {
 	var (
-		document       IniDocument
+		document       map[string]map[string]string
 		section        map[string]string
 		sectionName    string
 		writingSection bool
 		lineNo         int
 	)
 
-	document.sections = make(map[string]map[string]string)
+	document = make(map[string]map[string]string)
 
 	if len(content) == 0 {
 		return document, nil
@@ -114,7 +43,7 @@ func Parse(content string) (IniDocument, error) {
 		}
 
 		// Ignore comment
-		if strings.HasPrefix(line, ";") {
+		if strings.HasPrefix(line, ";") || strings.HasPrefix(line, "#") {
 			continue
 		}
 
@@ -122,18 +51,11 @@ func Parse(content string) (IniDocument, error) {
 		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
 			if writingSection {
 				writingSection = false
-				document.sections[sectionName] = section
+				document[sectionName] = section
 			}
 
 			sectionName = strings.TrimPrefix(line, "[")
 			sectionName = strings.TrimSuffix(sectionName, "]")
-
-			if strings.Contains(sectionName, " ") {
-				return document, &ParseError{
-					LineNumber: lineNo,
-					Message:    "section name cannot use spaces",
-				}
-			}
 
 			section = make(map[string]string)
 			writingSection = true
@@ -174,8 +96,22 @@ func Parse(content string) (IniDocument, error) {
 	// If file ended but still writing section
 	if writingSection {
 		writingSection = false
-		document.sections[sectionName] = section
+		document[sectionName] = section
 	}
 
 	return document, nil
+}
+
+func Dump(document map[string]map[string]string) string {
+	var builder strings.Builder
+
+	for sectionName, section := range document {
+		builder.WriteString(fmt.Sprintf("[%s]\n", sectionName))
+		for key, value := range section {
+			builder.WriteString(fmt.Sprintf("%s=%s\n", key, value))
+		}
+		builder.WriteString("\n")
+	}
+
+	return builder.String()
 }
